@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Climatograma</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="content">
+        <h1>Ingrese los Datos para el Climatograma</h1>
+        <form method="POST">
+            <label for="nombre">Lugar:</label><br>
+            <input type="text" id="nombre" name="nombre" required><br><br>
+    
+            <label for="temperatura">Temperatura media de cada mes (separado por comas):</label><br>
+            <input type="text" id="temperatura" name="temperatura" placeholder="Ej: 15.2,14.6,..." required><br><br>
+    
+            <label for="temperatura_min">Temperatura mínima de cada mes (separado por comas):</label><br>
+            <input type="text" id="temperatura_min" name="temperatura_min" placeholder="Ej: 7.9,6.9,..." required><br><br>
+    
+            <label for="temperatura_max">Temperatura máxima de cada mes (separado por comas):</label><br>
+            <input type="text" id="temperatura_max" name="temperatura_max" placeholder="Ej: 22.5,22.4,..." required><br><br>
+    
+            <label for="precipitacion">Precipitación media de cada mes (separado por comas):</label><br>
+            <input type="text" id="precipitacion" name="precipitacion" placeholder="Ej: 22,22,..." required><br><br>
+    
+            <input type="submit" value="Generar Climatograma">
+        </form>
+    </div>
+
+    {% if plot_url %}
+    <div class="generated">
+        <div class="contentg">
+            <h2>Climatograma Generado:</h2>
+            <img src="data:image/png;base64,{{ plot_url }}" alt="Climatograma">
+        </div>
+    </div>
+    {% endif %}
+</body>
+</html>
