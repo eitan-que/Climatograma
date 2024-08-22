@@ -90,11 +90,11 @@ input[type="submit"]:hover {
     padding: 20px;
     border-radius: 16px;
     gap: 20px;
-    height: auto;
+    height: 90%;
     width: auto;
     align-items: center;
-    justify-content: center;
     border: 2px solid #fff;
+    overflow-y: scroll;
 
     h2 {
         margin: 0;
@@ -103,5 +103,10 @@ input[type="submit"]:hover {
     img {
         width: 90%;
         border-radius: 16px;
+    }
+
+    info {
+        width: 90%;
+        height: 100%;
     }
 }

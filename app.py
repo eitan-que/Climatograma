@@ -7,13 +7,13 @@ import base64
 app = Flask(__name__)
 
 def determinar_hemisferio(temperaturas):
-    max_temp_index = temperaturas.index(max(temperaturas))
-    if max_temp_index in [0, 1, 11]:  # Meses de Diciembre, Enero, Febrero
-        return "sur"
-    elif max_temp_index in [5, 6, 7]:  # Meses de Junio, Julio, Agosto
+    temp_junio_julio = max(temperaturas[5], temperaturas[6])  # Junio, Julio
+    temp_diciembre_enero = max(temperaturas[11], temperaturas[0])  # Diciembre, Enero
+    
+    if temp_junio_julio > temp_diciembre_enero:
         return "norte"
     else:
-        return "indeterminado"
+        return "sur"
 
 def tipo_clima(promedio):
     if promedio >= 20:
@@ -56,6 +56,19 @@ def analizar_continentalidad(temperaturas):
     else:
         return "continental"
 
+def amplitud_termica_meses(temperaturas_min, temperaturas_max, precipitaciones):
+    amplitud_termica = [max_temp - min_temp for max_temp, min_temp in zip(temperaturas_max, temperaturas_min)]
+    
+    # Mes de mayor precipitación
+    mes_mayor_precipitacion = precipitaciones.index(max(precipitaciones))
+    menor_amplitud_termica = amplitud_termica[mes_mayor_precipitacion]
+
+    # Mes de menor precipitación
+    mes_menor_precipitacion = precipitaciones.index(min(precipitaciones))
+    mayor_amplitud_termica = amplitud_termica[mes_menor_precipitacion]
+
+    return (mes_mayor_precipitacion, round(menor_amplitud_termica, 2)), (mes_menor_precipitacion, round(mayor_amplitud_termica, 2))
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -71,50 +84,55 @@ def index():
         precipitaciones = [float(pre) for pre in preciI.split(',')]
         meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 
-        # Cálculos
-        promedio_temp = sum(temperaturas) / len(temperaturas)
+        promedio_temp = round(sum(temperaturas) / len(temperaturas), 2)
         total_precipitacion = sum(precipitaciones)
 
         hemisferio = determinar_hemisferio(temperaturas)
         clima = tipo_clima(promedio_temp)
-        area = determinar_area(abs(hemisferio == 'sur') * 23.5)  # Usando latitud de referencia según el hemisferio
+        area = determinar_area(abs(hemisferio == 'sur') * 23.5)
         precipitacion_tipo = tipo_precipitacion(total_precipitacion)
         topografia = analizar_topografia(temperaturas, precipitaciones)
         continentalidad = analizar_continentalidad(temperaturas)
+        
+        (mes_mayor_precipitacion, menor_amplitud), (mes_menor_precipitacion, mayor_amplitud) = amplitud_termica_meses(temperaturas_min, temperaturas_max, precipitaciones)
 
         # Gráfico
         plt.figure(figsize=(10, 6))
         plt.bar(meses, precipitaciones, color='blue', alpha=0.7, label='Precipitaciones')
         
-        # Añadir las líneas de temperaturas
         plt.plot(meses, temperaturas_min, color='yellow', marker='o', linestyle='-', label='Temp Mínima')
         plt.plot(meses, temperaturas, color='orange', marker='o', linestyle='-', label='Temp Media')
         plt.plot(meses, temperaturas_max, color='red', marker='o', linestyle='-', label='Temp Máxima')
-
-        # Añadir textos con datos climáticos
-        plt.text(11, min(precipitaciones) - 10, f'Zona {topografia}', fontsize=12, ha='center')
-        plt.text(11, min(precipitaciones) - 20, f'Clima {clima}', fontsize=12, ha='center')
-        plt.text(11, min(precipitaciones) - 30, f'Hemisferio {hemisferio.capitalize()}', fontsize=12, ha='center')
-        plt.text(11, min(precipitaciones) - 40, f'Área {area}', fontsize=12, ha='center')
-        plt.text(11, min(precipitaciones) - 50, f'Tipo de Precipitación {precipitacion_tipo}', fontsize=12, ha='center')
-        plt.text(11, min(precipitaciones) - 60, f'Continentalidad {continentalidad}', fontsize=12, ha='center')
-
-        # Mostrar temperaturas mínima y máxima en el gráfico
-        plt.text(0, max(temperaturas_max) + 5, f'Temp Máx: {max(temperaturas_max)}°C', fontsize=10, ha='left', va='top')
-        plt.text(0, max(temperaturas_max) + 10, f'Temp Mín: {min(temperaturas_min)}°C', fontsize=10, ha='left', va='top')
 
         plt.xlabel('Meses')
         plt.ylabel('Temperatura / Precipitaciones')
         plt.title(f'Climatograma de: {nom}')
         plt.legend()
 
-        # Guardar imagen en base64
         img = io.BytesIO()
         plt.savefig(img, format='png')
         img.seek(0)
         plot_url = base64.b64encode(img.getvalue()).decode()
 
-        return render_template('index.html', plot_url=plot_url)
+        # Datos para mostrar en HTML
+        datos_climaticos = {
+            "nombre": nom,
+            "hemisferio": hemisferio.capitalize(),
+            "clima": clima,
+            "area": area,
+            "tipo_precipitacion": precipitacion_tipo,
+            "topografia": topografia,
+            "continentalidad": continentalidad,
+            "mayor_amplitud_mes": meses[mes_menor_precipitacion],
+            "mayor_amplitud": mayor_amplitud,
+            "menor_amplitud_mes": meses[mes_mayor_precipitacion],
+            "menor_amplitud": menor_amplitud,
+            "temp_max": round(max(temperaturas_max), 2),
+            "temp_media": promedio_temp,
+            "temp_min": round(min(temperaturas_min), 2)
+        }
+
+        return render_template('index.html', plot_url=plot_url, datos_climaticos=datos_climaticos)
 
     return render_template('index.html')
 

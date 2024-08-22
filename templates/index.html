@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Climatograma</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        .info {
+            background-color: rgba(255, 255, 255, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
     <div class="content">
@@ -34,6 +42,21 @@
         <div class="contentg">
             <h2>Climatograma Generado:</h2>
             <img src="data:image/png;base64,{{ plot_url }}" alt="Climatograma">
+            <div class="info">
+                <h3>Datos Climáticos:</h3>
+                <p><strong>Lugar:</strong> {{ datos_climaticos.nombre }}</p>
+                <p><strong>Hemisferio:</strong> {{ datos_climaticos.hemisferio }}</p>
+                <p><strong>Clima:</strong> {{ datos_climaticos.clima }}</p>
+                <p><strong>Área:</strong> {{ datos_climaticos.area }}</p>
+                <p><strong>Tipo de Precipitación:</strong> {{ datos_climaticos.tipo_precipitacion }}</p>
+                <p><strong>Topografía:</strong> {{ datos_climaticos.topografia }}</p>
+                <p><strong>Continentalidad:</strong> {{ datos_climaticos.continentalidad }}</p>
+                <p><strong>Mes de mayor amplitud térmica (menos lluvia):</strong> {{ datos_climaticos.mayor_amplitud_mes }} ({{ datos_climaticos.mayor_amplitud }}°C)</p>
+                <p><strong>Mes de menor amplitud térmica (más lluvia):</strong> {{ datos_climaticos.menor_amplitud_mes }} ({{ datos_climaticos.menor_amplitud }}°C)</p>
+                <p><strong>Temperatura Máxima:</strong> {{ datos_climaticos.temp_max }}°C</p>
+                <p><strong>Temperatura Media:</strong> {{ datos_climaticos.temp_media }}°C</p>
+                <p><strong>Temperatura Mínima:</strong> {{ datos_climaticos.temp_min }}°C</p>
+            </div>
         </div>
     </div>
     {% endif %}
